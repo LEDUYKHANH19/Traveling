@@ -1,0 +1,9 @@
+node_modules
+dist
+.expo
+.turbo
+coverage
+package-lock.json
+apps/backend/src/prisma/migrations
+my-clerk-app
+**/.next

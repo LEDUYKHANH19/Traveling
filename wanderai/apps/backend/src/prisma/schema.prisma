@@ -1,0 +1,108 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  String          @id @default(cuid())
+  clerkId             String          @unique
+  email               String          @unique
+  preferredLanguage   String          @default("en")
+  dietaryRestrictions String[]        @default([])
+  travelStyle         String          @default("local")
+  spicyPreference     Int             @default(3)
+  sweetPreference     Int             @default(3)
+  savoryPreference    Int             @default(3)
+  subscriptionTier    String          @default("free")
+  nationality         String?
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+  itineraries         Itinerary[]
+  reviews             Review[]
+  savedPlaces         SavedPlace[]
+  searchHistory       SearchHistory[]
+}
+
+model SearchHistory {
+  id        String   @id @default(cuid())
+  userId    String
+  query     String
+  lat       Float
+  lng       Float
+  results   Json
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model SavedPlace {
+  id        String   @id @default(cuid())
+  userId    String
+  placeId   String
+  name      String
+  address   String
+  lat       Float
+  lng       Float
+  savedAt   DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, placeId])
+  @@index([userId, savedAt])
+}
+
+model Review {
+  id          String   @id @default(cuid())
+  userId      String
+  placeId     String
+  rating      Float
+  text        String
+  photos      String[] @default([])
+  tags        String[] @default([])
+  nationality String
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([placeId, createdAt])
+  @@index([nationality, createdAt])
+}
+
+model Translation {
+  id             String   @id @default(cuid())
+  hash           String   @unique
+  sourceText     String
+  sourceLang     String
+  targetLang     String
+  translatedText String
+  cachedAt       DateTime @default(now())
+
+  @@index([sourceLang, targetLang])
+}
+
+model Itinerary {
+  id          String   @id @default(cuid())
+  userId      String
+  destination String
+  days        Int
+  budgetRange String
+  content     Json
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+}
